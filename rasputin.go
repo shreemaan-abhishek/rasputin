@@ -20,7 +20,7 @@ var (
 	val string
 )
 
-func commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext context.Context, value string) {
+func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext context.Context, value string) {
 	name = candidateName
 	cli = client
 	pfx = electionPrefix
@@ -37,7 +37,7 @@ func commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 	fmt.Println("Rasputin!")
 }
 
-func participate() {
+func Participate() {
 	if err := election.Campaign(*ctx, pfx); err != nil {
 		log.Fatal(err)
 	}
