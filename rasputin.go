@@ -20,11 +20,11 @@ var (
 	val string
 )
 
-func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext context.Context, value string) {
+func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext *context.Context, value string) {
 	name = candidateName
 	cli = client
 	pfx = electionPrefix
-	ctx = &electionContext
+	ctx = electionContext
 	val = value
 
 	s, err := concurrency.NewSession(cli, concurrency.WithTTL(leaseTimeToLive))
@@ -38,7 +38,7 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 }
 
 func Participate() {
-	if err := election.Campaign(*ctx, pfx); err != nil {
+	if err := election.Campaign(*ctx, val); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("leader election for", name)
