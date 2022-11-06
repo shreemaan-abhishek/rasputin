@@ -53,11 +53,13 @@ func Participate() {
 }
 
 func Close() {
+	log.Println("Closing rasputin")
 	cli.Close()
 	electionSession.Close()
 }
 
 func watch(ctx *context.Context) {
+	log.Println("Watching...")
 	loop: for {
 		select {
 		case <-(*ctx).Done():
