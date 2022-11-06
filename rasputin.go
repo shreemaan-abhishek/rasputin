@@ -60,11 +60,6 @@ func Close() {
 
 func watch(ctx *context.Context) {
 	log.Println("Watching...")
-	loop: for {
-		select {
-		case <-(*ctx).Done():
-			Close()
-			break loop
-		}
-	}
+	<-(*ctx).Done()
+	Close()
 }
