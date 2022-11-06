@@ -58,10 +58,11 @@ func Close() {
 }
 
 func watch(ctx *context.Context) {
-	for {
+	loop: for {
 		select {
 		case <-(*ctx).Done():
 			Close()
+			break loop
 		}
 	}
 }
