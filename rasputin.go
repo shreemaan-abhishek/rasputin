@@ -49,3 +49,8 @@ func Participate() {
 	}
 	fmt.Println("resign ", name)
 }
+
+func Close() {
+	cli.Close()
+	electionSession.Close()
+}
