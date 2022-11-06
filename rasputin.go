@@ -34,6 +34,8 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 	electionSession = s
 	election = concurrency.NewElection(electionSession, pfx)
 
+	go watch(electionContext)
+
 	fmt.Println("Rasputin!")
 }
 
@@ -53,4 +55,13 @@ func Participate() {
 func Close() {
 	cli.Close()
 	electionSession.Close()
+}
+
+func watch(ctx *context.Context) {
+	for {
+		select {
+		case <-(*ctx).Done():
+			Close()
+		}
+	}
 }
