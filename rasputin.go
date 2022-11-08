@@ -18,14 +18,16 @@ var (
 	ctx *context.Context
 	pfx string
 	val string
+	ldrshipDuration time.Duration
 )
 
-func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext *context.Context, value string) {
+func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext *context.Context, value string, leadershipDuration time.Duration) {
 	name = candidateName
 	cli = client
 	pfx = electionPrefix
 	ctx = electionContext
 	val = value
+	ldrshipDuration = leadershipDuration
 
 	s, err := concurrency.NewSession(cli, concurrency.WithTTL(leaseTimeToLive))
 	if err != nil {
@@ -43,13 +45,18 @@ func Participate() {
 	if err := election.Campaign(*ctx, val); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("leader election for", name)
-	fmt.Println("Do some work in", name)
-	time.Sleep(500 * time.Second)  
+	log.Printf("%s acquired leadership status", name)
+	go giveUpLeadershipAfterDelay(ldrshipDuration)
+}
+
+func giveUpLeadershipAfterDelay(delay time.Duration) {
+	time.Sleep(delay)
 	if err := election.Resign(*ctx); err != nil {
-	  log.Fatal(err)
+		log.Printf("Failed to give up leadership for %s due to error: %s", name, err)
 	}
-	fmt.Println("resign ", name)
+	log.Println("Gave up leadership:", name)
+	// re-participate as a candidate after giving up leadership
+	Participate()
 }
 
 func Close() {
