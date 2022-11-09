@@ -11,13 +11,13 @@ import (
 )
 
 var (
-	name string
-	cli *clientv3.Client
+	name            string
+	cli             *clientv3.Client
 	electionSession *concurrency.Session
-	election *concurrency.Election
-	ctx *context.Context
-	pfx string
-	val string
+	election        *concurrency.Election
+	ctx             *context.Context
+	pfx             string
+	val             string
 	ldrshipDuration time.Duration
 )
 
@@ -31,7 +31,7 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 
 	s, err := concurrency.NewSession(cli, concurrency.WithTTL(leaseTimeToLive))
 	if err != nil {
-	  log.Fatal(err)
+		log.Fatal(err)
 	}
 	electionSession = s
 	election = concurrency.NewElection(electionSession, pfx)
