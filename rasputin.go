@@ -42,11 +42,13 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 }
 
 func Participate() {
-	if err := election.Campaign(*ctx, val); err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("%s acquired leadership status", name)
-	go giveUpLeadershipAfterDelay(ldrshipDuration)
+	go func() {
+		if err := election.Campaign(*ctx, val); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("%s acquired leadership status", name)
+		giveUpLeadershipAfterDelay(ldrshipDuration)
+	}()
 }
 
 func giveUpLeadershipAfterDelay(delay time.Duration) {
