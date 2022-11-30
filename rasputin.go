@@ -45,8 +45,8 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 
 func observe() {
 	cres := election.Observe(context.Background())
-	for {
-		response := <-cres
+	for response := range cres {
+		fmt.Println("received response", response)
 		currentLeaderKey = response.Kvs[0].Key
 	}
 }
