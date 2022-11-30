@@ -10,18 +10,6 @@ import (
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
-// var (
-// 	name             string
-// 	cli              *clientv3.Client
-// 	electionSession  *concurrency.Session
-// 	election         *concurrency.Election
-// 	ctx              *context.Context
-// 	pfx              string
-// 	val              string
-// 	ldrshipDuration  time.Duration
-// 	currentLeaderKey []byte
-// )
-
 type Rasputin struct {
 	name               string
 	client             *clientv3.Client
