@@ -70,7 +70,7 @@ func (r *Rasputin) IsLeader() bool {
 	return isLeader
 }
 
-func (r *Rasputin) Participate() chan bool {
+func (r *Rasputin) Participate() <-chan bool {
 	go func() {
 		if err := r.election.Campaign(*r.ctx, r.val); err != nil {
 			log.Fatal(err)
