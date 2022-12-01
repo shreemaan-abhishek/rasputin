@@ -34,18 +34,18 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 	e := concurrency.NewElection(s, electionPrefix)
 	statusCh := make(chan bool)
 	r := &Rasputin{
-		name: candidateName,
-		client: client,
-		electionSession: s,
-		election: e,
-		ctx: electionContext,
-		prefix: electionPrefix,
-		val: value,
+		name:               candidateName,
+		client:             client,
+		electionSession:    s,
+		election:           e,
+		ctx:                electionContext,
+		prefix:             electionPrefix,
+		val:                value,
 		leadershipDuration: leadershipDuration,
-		statusCh: statusCh,
+		statusCh:           statusCh,
 	}
 
-	go r.watch(electionContext)
+	go r.waitCleanup(electionContext)
 	go r.observe()
 
 	fmt.Println("Rasputin!")
@@ -67,7 +67,6 @@ func (r *Rasputin) observe() {
 }
 
 func (r *Rasputin) IsLeader() bool {
-	//TODO: doc
 	return isLeader
 }
 
@@ -94,12 +93,14 @@ func (r *Rasputin) giveUpLeadershipAfterDelay(delay time.Duration) {
 }
 
 func (r *Rasputin) Close() {
-	log.Println("Closing rasputin")
+	log.Println("Closing rasputin, freeing resources")
 	r.client.Close()
 	r.electionSession.Close()
+	close(r.statusCh)
 }
 
-func (r *Rasputin) watch(ctx *context.Context) {
+// Waits for context cancellation to cleanup resources
+func (r *Rasputin) waitCleanup(ctx *context.Context) {
 	log.Println("Watching...")
 	<-(*ctx).Done()
 	r.Close()
