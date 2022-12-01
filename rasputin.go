@@ -44,6 +44,10 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 		leadershipDuration: leadershipDuration,
 		statusCh:           statusCh,
 	}
+
+	go r.waitCleanup(electionContext)
+	go r.observe()
+
 	fmt.Println("Rasputin!")
 	return r, nil
 }
@@ -76,8 +80,6 @@ func (r *Rasputin) Participate() (<-chan bool, <-chan error) {
 		r.giveUpLeadershipAfterDelay(r.leadershipDuration)
 	}()
 
-	go r.waitCleanup(r.ctx)
-	go r.observe()
 	return r.statusCh, cherr
 }
 
