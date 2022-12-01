@@ -25,11 +25,11 @@ type Rasputin struct {
 
 var isLeader bool = false
 
-func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext *context.Context, value string, leadershipDuration time.Duration) *Rasputin {
+func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext *context.Context, value string, leadershipDuration time.Duration) (*Rasputin, error) {
 
 	s, err := concurrency.NewSession(client, concurrency.WithTTL(leaseTimeToLive))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	e := concurrency.NewElection(s, electionPrefix)
 	statusCh := make(chan bool)
@@ -45,7 +45,7 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 		statusCh:           statusCh,
 	}
 	fmt.Println("Rasputin!")
-	return r
+	return r, nil
 }
 
 func (r *Rasputin) observe() {
@@ -66,10 +66,11 @@ func (r *Rasputin) IsLeader() bool {
 	return isLeader
 }
 
-func (r *Rasputin) Participate() <-chan bool {
+func (r *Rasputin) Participate() (<-chan bool, <-chan error) {
+	cherr := make(chan error)
 	go func() {
 		if err := r.election.Campaign(*r.ctx, r.val); err != nil {
-			log.Fatal(err)
+			cherr<- err
 		}
 		log.Printf("%s acquired leadership status", r.name)
 		r.giveUpLeadershipAfterDelay(r.leadershipDuration)
@@ -77,7 +78,7 @@ func (r *Rasputin) Participate() <-chan bool {
 
 	go r.waitCleanup(r.ctx)
 	go r.observe()
-	return r.statusCh
+	return r.statusCh, cherr
 }
 
 func (r *Rasputin) giveUpLeadershipAfterDelay(delay time.Duration) {
