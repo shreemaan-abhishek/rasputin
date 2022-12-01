@@ -20,7 +20,10 @@ type Rasputin struct {
 	val                string
 	leadershipDuration time.Duration
 	currentLeaderKey   []byte
+	statusCh           chan bool
 }
+
+var isLeader bool = false
 
 func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext *context.Context, value string, leadershipDuration time.Duration) *Rasputin {
 
@@ -29,7 +32,7 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 		log.Fatal(err)
 	}
 	e := concurrency.NewElection(s, electionPrefix)
-
+	statusCh := make(chan bool)
 	r := &Rasputin{
 		name: candidateName,
 		client: client,
@@ -39,6 +42,7 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 		prefix: electionPrefix,
 		val: value,
 		leadershipDuration: leadershipDuration,
+		statusCh: statusCh,
 	}
 
 	go r.watch(electionContext)
@@ -51,17 +55,23 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 func (r *Rasputin) observe() {
 	cres := r.election.Observe(context.Background())
 	for response := range cres {
-		fmt.Println("received response", response)
 		r.currentLeaderKey = response.Kvs[0].Key
+		if !isLeader && (r.election.Key() == string(r.currentLeaderKey)) {
+			r.statusCh <- true
+		}
+		if isLeader && (r.election.Key() != string(r.currentLeaderKey)) {
+			r.statusCh <- false
+		}
+		isLeader = (r.election.Key() == string(r.currentLeaderKey))
 	}
 }
 
 func (r *Rasputin) IsLeader() bool {
 	//TODO: doc
-	return r.election.Key() == string(r.currentLeaderKey)
+	return isLeader
 }
 
-func (r *Rasputin) Participate() {
+func (r *Rasputin) Participate() chan bool {
 	go func() {
 		if err := r.election.Campaign(*r.ctx, r.val); err != nil {
 			log.Fatal(err)
@@ -69,6 +79,8 @@ func (r *Rasputin) Participate() {
 		log.Printf("%s acquired leadership status", r.name)
 		r.giveUpLeadershipAfterDelay(r.leadershipDuration)
 	}()
+
+	return r.statusCh
 }
 
 func (r *Rasputin) giveUpLeadershipAfterDelay(delay time.Duration) {
