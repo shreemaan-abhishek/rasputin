@@ -54,7 +54,7 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 
 // Observe leadership status changes and notify client via a channel
 func (r *Rasputin) observe() {
-	cres := r.election.Observe(context.Background())
+	cres := r.election.Observe(*r.ctx)
 	for response := range cres {
 		r.currentLeaderKey = response.Kvs[0].Key
 		// isLeader denots previous leadership status as it hasn't been updated yet
