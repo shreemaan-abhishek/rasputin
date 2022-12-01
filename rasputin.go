@@ -11,7 +11,6 @@ import (
 )
 
 type Rasputin struct {
-	name               string
 	client             *clientv3.Client
 	electionSession    *concurrency.Session
 	election           *concurrency.Election
@@ -25,7 +24,7 @@ type Rasputin struct {
 
 var isLeader bool = false
 
-func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext *context.Context, value string, leadershipDuration time.Duration) (*Rasputin, error) {
+func Commission(client *clientv3.Client, leaseTimeToLive int, electionPrefix string, electionContext *context.Context, value string, leadershipDuration time.Duration) (*Rasputin, error) {
 
 	s, err := concurrency.NewSession(client, concurrency.WithTTL(leaseTimeToLive))
 	if err != nil {
@@ -34,7 +33,6 @@ func Commission(candidateName string, client *clientv3.Client, leaseTimeToLive i
 	e := concurrency.NewElection(s, electionPrefix)
 	statusCh := make(chan bool)
 	r := &Rasputin{
-		name:               candidateName,
 		client:             client,
 		electionSession:    s,
 		election:           e,
@@ -81,7 +79,6 @@ func (r *Rasputin) Participate() (<-chan bool, <-chan error) {
 		if err := r.election.Campaign(*r.ctx, r.val); err != nil {
 			cherr<- err
 		}
-		log.Printf("%s acquired leadership status", r.name)
 		r.giveUpLeadershipAfterDelay(r.leadershipDuration)
 	}()
 
@@ -91,9 +88,8 @@ func (r *Rasputin) Participate() (<-chan bool, <-chan error) {
 func (r *Rasputin) giveUpLeadershipAfterDelay(delay time.Duration) {
 	time.Sleep(delay)
 	if err := r.election.Resign(*r.ctx); err != nil {
-		log.Printf("Failed to give up leadership for %s due to error: %s", r.name, err)
+		log.Printf("Failed to give up leadership due to error: %s", err)
 	}
-	log.Println("Gave up leadership:", r.name)
 	// re-participate as a candidate after giving up leadership
 	r.Participate()
 }
