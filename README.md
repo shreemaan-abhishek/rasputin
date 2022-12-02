@@ -44,3 +44,9 @@ Look for leadership status changes like so:
 		}
 	}
 ```
+
+You can make a process resign from the leadership status anytime by calling:
+
+```go
+rasputin.Resign()
+```
