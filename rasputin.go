@@ -79,14 +79,14 @@ func (r *Rasputin) Participate() (<-chan bool, <-chan error) {
 		if err := r.election.Campaign(*r.ctx, r.val); err != nil {
 			errCh<- err
 		}
-		r.giveUpLeadershipAfterDelay(r.leadershipDuration)
+		r.giveUpLeadershipAfterDelay()
 	}()
 
 	return r.statusCh, errCh
 }
 
-func (r *Rasputin) giveUpLeadershipAfterDelay(delay time.Duration) {
-	time.Sleep(delay)
+func (r *Rasputin) giveUpLeadershipAfterDelay() {
+	time.Sleep(r.leadershipDuration)
 	if err := r.election.Resign(*r.ctx); err != nil {
 		log.Printf("Failed to give up leadership due to error: %s", err)
 	}
