@@ -1,5 +1,5 @@
 # rasputin
-Rasputin sits on top of the etcd client and provides a succinct API for leader election and related chores. Using rasputin you are relieved off the load of writing code to perform periodic leadership shed, to check current leadership status, and to listen for leadership status changes.
+Rasputin sits on top of the etcd client and provides a succinct API for leader election and related chores. Using rasputin you are relieved off the load of writing code to perform simple tasks like periodic leadership shed, to check current leadership status, and to listen for leadership status changes.
 
 Initialise your etcd client as you prefer and pass it to the rasputin constructor function with other parameters.
 
@@ -50,3 +50,5 @@ You can make a process resign from the leadership status anytime by calling:
 ```go
 rasputin.Resign()
 ```
+
+To understand the basics of leader election using etcd checkout [this](https://shreemaan-abhishek.hashnode.dev/microservice-leader-election-using-etcd) blog.
