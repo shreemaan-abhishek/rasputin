@@ -52,8 +52,8 @@ func Commission(client *clientv3.Client, leaseTimeToLive int, electionPrefix str
 
 // Observe leadership status changes and notify client via a channel
 func (r *Rasputin) observe() {
-	cres := r.election.Observe(*r.ctx)
-	for response := range cres {
+	resCh := r.election.Observe(*r.ctx)
+	for response := range resCh {
 		r.currentLeaderKey = response.Kvs[0].Key
 		// isLeader denots previous leadership status as it hasn't been updated yet
 		// (r.election.Key() == string(r.currentLeaderKey)) denotes current leadership status
@@ -74,15 +74,15 @@ func (r *Rasputin) IsLeader() bool {
 // Participate in leader election, statusCh will produce true when the current instance
 // becomes a leader and false when the current instance loses leadership.
 func (r *Rasputin) Participate() (<-chan bool, <-chan error) {
-	cherr := make(chan error)
+	errCh := make(chan error)
 	go func() {
 		if err := r.election.Campaign(*r.ctx, r.val); err != nil {
-			cherr<- err
+			errCh<- err
 		}
 		r.giveUpLeadershipAfterDelay(r.leadershipDuration)
 	}()
 
-	return r.statusCh, cherr
+	return r.statusCh, errCh
 }
 
 func (r *Rasputin) giveUpLeadershipAfterDelay(delay time.Duration) {
