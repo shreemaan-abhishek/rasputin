@@ -94,6 +94,10 @@ func (r *Rasputin) giveUpLeadershipAfterDelay() {
 	r.Participate()
 }
 
+func (r *Rasputin) Resign() {
+	r.election.Resign(*r.ctx)
+}
+
 func (r *Rasputin) Close() {
 	log.Println("Closing rasputin, freeing resources")
 	r.client.Close()
