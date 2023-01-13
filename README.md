@@ -1,5 +1,9 @@
 # rasputin
-Rasputin sits on top of the etcd client and provides a succinct API for leader election and related chores. Using rasputin you are relieved off the load of writing code to perform simple tasks like periodic leadership shed, to check current leadership status, and to listen for leadership status changes.
+Rasputin is a leader election client. _To understand the basics of leader election checkout [this](https://aws.amazon.com/builders-library/leader-election-in-distributed-systems/) blog._
+
+It sits on top of the etcd client and provides a succinct API for leader election and related chores. Using rasputin you are relieved off the load of writing code to perform simple tasks like periodic leadership shed, to check current leadership status, and to listen for leadership status changes.
+
+## Usage:
 
 Initialise your etcd client as you prefer and pass it to the rasputin constructor function with other parameters.
 
